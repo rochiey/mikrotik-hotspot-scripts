@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="assets/css/toast.min.css">
+	<link rel="stylesheet" href="assets/css/core.css">
+	<link rel="stylesheet" href="assets/css/JuanFi.css">
+    <title>Pisowifi - Status</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<script src="assets/js/config.js"></script>
+	<script src="assets/js/pako.min.js"></script>
+	<script>
+		var loginError = "";
+		var mac = "$(mac)";
+		var logoutUrl = "$(link-logout)";
+		var hotspotAddress = "$(server-address)"; 
+		var interfaceName = "$(interface-name)";
+		var remainingTimer = null;
+	</script>
+
+</head>
+<body id="loginBody">
+
+<div class="container">
+<center>
+		<form action="$(link-logout)" name="logout" >
+		</form>
+
+		<form action="$(link-logout)" name="forcelogout" >
+			<input type="hidden" name="erase-cookie" value="true" />
+		</form>
+		
+        <div class="row">
+            <div class="col-md-12">
+                <div class="banner">
+                    <img src="assets/MainPic.png" class="img-fluid" />
+
+					<div id="announcement-holder" class="my-announcement">
+						<span id="announcement">-</span>
+					</div>
+                </div>	
+            </div>
+
+            <div class="col-md-12">
+                <div class="login">
+
+					<div class="stats" style="width: 150px;">
+						<span class="status-connected"><span class="blinking2" id="connectionStatus" style="color: #00de59; letter-spacing: 2px; font-weight: 700;">&#9678; Connected &#9678;</span></span>
+					</div>
+
+					<div class="info">		
+						<div class="info-mac" style="display: inline-block; margin-right: 1px;">
+							<span>$(mac)</span>
+						</div>
+						-
+						<div class="info-ip" style="display: inline-block; margin-left: 1px;">
+							<span id="ipc">$(ip)</span>
+						</div>
+					</div>
+
+					<p id="trialText" class="mytext" style="display: none; margin: 0 auto; font-size: 16px;">Trial Mode</p>
+
+					<div class="vcher" style="width: 100%;">
+						<span class="mytext">Code:</span>
+						<span id="uvc" style="font-size: 18px; font-weight: bold; color: darkorange;">$(username)</span>
+					</div>
+
+					<div>
+						<div class="stats-holder" style="width: 90%;">
+							<span class="mytext">Time:</span>
+							<span class="odometer" id="remainTime" style="font-size: 16px; font-weight: bold;">--</span>
+						</div>
+
+						<div class="stats-holder" style="width: 80%;">
+							<span class="mytext" style="font-size: 10px;">Valid:</span>
+							<span id="expirationTime" style="font-size: 10px; font-weight: bold;">--</span>
+						</div>				
+					
+						<div class="stats-holder" style="font-size: 10px; font-weight: bold; width: 70%;">
+							<span style="font-size: 10px; font-weight: bold;"><img src="assets/img/upload.png" width="10px" height="10px" />$(bytes-in-nice)</span>
+							<span style="font-size: 10px; font-weight: bold;"><img src="assets/img/download.png" width="10px" height="10px" />$(bytes-out-nice)</span>
+						</div>
+
+						<div class="stats-holder" id="dataInfoDiv2" style="width: 60%; display: none;">
+							<span class="mytext" style="font-size: 10px; font-weight: bold;">Remaining Data:</span>
+							<span id="totalDataInfo" style="font-size: 12px; font-weight: bold; color: #d17300">$(remain-bytes-total-nice)</span>
+						</div>
+					</div>
+
+					<div id="vendoSelectDiv">
+						<label for="exampleFormControlSelect2">Select Vendo</label>
+						<select class="form-control" name="vendoSelected" id="vendoSelected" >
+						</select>
+					</div>
+					
+					<br>
+				
+					<button type="button" id="insertBtn" onclick="insertBtnAction(); return false" class="btn" data-insert-type="extend" data-toggle="modal">EXTEND TIME</button>
+				
+					<button type="button" id="promoRateBtn" onclick="promoBtnAction(); return false" class="btn btn-red">PROMO RATES</button>
+				
+					<button type="button" id="pauseTimeBtn" onClick="pause(); return false" class="btn btn-red">PAUSE TIME</button>
+				
+					<button type="button" id="chargingBtn" onclick="chargingBtnAction(); return false" class="btn btn-red">CHARGING STATION</button>
+				
+					<button type="button" id="eloadBtn" onclick="eloadBtnAction(); return false" class="btn btn-red">E-LOAD</button>
+					
+					<button type="button" class="btn btn-red" onclick='window.location.href="assets/movie/index.html"'>FREE MOVIES</button>
+					
+					<button type="button" class="btn btn-red" onclick='window.location.href="iptv.html"'>TV CABLE</button>
+				
+					<div class="modal " id="insertCoinModal" style="z-index: 1500" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="insertCoinModalTitle" aria-hidden="true">
+						<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						  <div class="modal-content">
+							<div class="modal-header">
+							  <h5 class="modal-title" id="insertCoinModalTitle">Please insert the coin</h5>
+							  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							  </button>
+							</div>
+							<div class="modal-body">
+								  <div class="progress" style="margin-bottom: 5px">
+									  <div id="progressDiv" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%; height: 30px"></div>
+								  </div>
+  
+								  <div id="noticeDiv" style="display: none">
+									  <center>
+										  <h4 id="noticeText">Coin is reading, please wait</h4>
+									  </center>
+								  </div>
+  
+								  <div class="inscoin">
+									  <center>
+										  <div class="inscoinholder">
+											  <span class="mytext">Your code is</span><br>
+											  <span id="codeGeneratedBlock">
+												  <span id="codeGenerated"
+													  style="font-size: 35px; font-weight: bold; color: #00de59">*****</span>
+											  </span>
+										  </div>
+  
+										  <ul class="list-group text-left" style="margin: 5px 0 5px 0;">
+											  <li class="list-group-item">Coin:<span id="totalCoin"> --</span><span
+													  style="margin-left: 0px;">.00 Php</span></li>
+  
+											  <li class="list-group-item" id="totalTimeDiv">Time:<span id="totalTime">
+													  --</span></li>
+  
+											  <li class="list-group-item" id="conVCholder">Converted Voucher:<span
+													  id="conVC"></span></li>
+
+											  <li class="list-group-item" id="expectedCoinDiv" style="display: none">
+												  Expected Coin:<span id="expectedCoin"> --</span>
+											  </li>
+  
+										  </ul>
+  
+										  <div class="inscoinholder convertVoucherBlock" id="convertVoucherBlockDiv" style="margin: 5px 0;">
+											  <span class="mytext">Convert unused voucher</span>
+											  <br>
+											  <input type="text" class="form-control" id="convertVoucherCode"
+												  placeholder="Enter voucher"
+												  style="max-width: 180px; text-align: center; display: inline-block;">
+											  <button type="button" id="convertBtn" class="btn outlineBtn"
+												  onclick="convertVoucherAction(); return false"
+												  style="width: 80px; height: 38px; display: inline-block; margin-top: -4px;">Convert</button>
+										  </div>
+  
+									  </center>
+								  </div>
+	  
+							</div>
+							<div class="modal-footer">
+							  <button type="button" id="saveVoucherButton" data-save-type="extend" onclick="saveVoucherBtnAction(); return false" class="btn btn-green" data-dismiss="modal" style="width: 40%;">
+								  Done
+							  </button>
+							  <button type="button" id="cncl" class="btn btn-red" data-dismiss="modal" style="width: auto;">Cancel</button>
+							</div>
+						  </div>
+						</div>
+					</div>
+					
+					<div class="modal " id="promoRatesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+					  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">Promo Rates</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true" style="color: #fff">&times;</span>
+							</button>
+						  </div>
+						  <div class="modal-body">
+							<center>
+								<div id="rateTypeDiv">
+								<label for="rateType" class="rate-title"><b>Rate Type</b></label>
+								<select name="rateType" class="form-control" id="rateType" onChange="onRateTypeChange(this)">
+								  <option value="1">Internet</option>
+								  <option value="2">Charging</option>
+								</select>
+								</div>
+							</center>
+					
+							<center>	
+							<div id="ratesBody"></div>
+							<div id="totalTime"></div>							
+							</center>
+						  </div>
+						  <div class="modal-footer">
+							<button type="button" class="btn btn-red" data-dismiss="modal" style="width: auto;">Close</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
+					
+					<div class="modal " id="chargingModal" tabindex="1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+					  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">Charging Station</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true" style="color: #fff">&times;</span>
+							</button>
+						  </div>
+						  <div class="modal-body">
+							<center>	
+							<div id="chargingBody"></div>
+							</center>
+						  </div>
+						  <div class="modal-footer">
+							<button type="button" class="btn btn-red" data-dismiss="modal" style="width: auto;">Close</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
+					
+					<div class="modal " id="eloadModal" tabindex="1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+					  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">E-LOAD</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true" style="color: #fff">&times;</span>
+							</button>
+						  </div>
+						  <div class="modal-body">
+							<center>	
+							<div id="eloadingBody">
+								<h4 id="eloadConfirm" style="display: none"><span style="color: #2e86de;">CONFIRM YOUR SELECTED DETAILS</span></h4>
+								<div id="mobileNumDiv" class="input-bottom-space-20px">
+									<label for="exampleFormControlSelect2">Mobile #</label>
+									<input type="number" class="form-control" id="mobileNo" aria-describedby="mobileNo"  pattern="\d*" maxlength="11" placeholder="Enter mobile number (Ex: 09182392234)" required>
+								</div>
+								<div id="loadTypeDiv" style="display: none" class="input-bottom-space-20px">
+									<label for="exampleFormControlSelect2" >Select Load Type</label>
+									<select class="form-control" name="loadType" onChange="loadTypeChanged(this)" id="loadTypeSelected" >
+									</select>
+								</div>
+								<div id="productTypeDiv" style="display: none" class="input-bottom-space-20px">
+									<label for="exampleFormControlSelect2">Select Product</label>
+									<select class="form-control input-bottom-space-20px" name="productType" id="productTypeSelected" onChange="productTypeChanged(this)">
+									</select>
+									<label for="exampleFormControlSelect2">Price (PHP)</label>
+									<input type="text" class="form-control" id="price" aria-describedby="mobileNo" disabled>
+								</div>
+								<br/>
+								<h5 id="eloadConfirm2" style="display: none;" class="input-bottom-space-20px"><span style="color: #2e86de;">Please make sure to insert the exact amount <ul style="
+									font-size: medium;
+									color: white;
+									text-align: left;
+								"><li>In case theres an excess amount or amount is insufficient, it will be converted to a voucher code and you can use it for your next e-Loading or you can use it on internet service.</li></ul></span></h5>
+							</div>
+							</center>
+						  </div>
+						  <div class="modal-footer">
+							<button type="button" id="buyEloadPrevBtn" class="btn btn-red" onclick="buyEloadPrevAction(); return false" style="width: auto;">Close</button>
+						    <button type="button" id="buyEloadBtn" onclick="buyEloadAction(); return false" class="btn btn-green" style="width: auto;">Next</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
+
+                </div>
+				
+				<div class="footer">
+					<span class="footers mytext" style="font-size: 14px;">
+					Powered by: <a href="https://" id="footerName">-</a>			
+					</span>				
+				</div>
+            </div>	
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/popper.min.js"></script>
+			<script src="assets/js/bootstrap.min.js"></script>
+			<script src="assets/js/toast.min.js"></script>
+			<script src="assets/js/core.js"></script>
+			<script src="assets/js/eload.js"></script>
+			<script src="assets/js/pako.min.js"></script>
+	
+			<script>
+				var sessiontime = "$(session-time-left-secs)";
+				var uptime = "$(uptime-secs)";
+				var currentVoucher = "$(username)";
+				window.name="hotspot_status";
+				
+				$(document).ready(function(){
+					voucher = currentVoucher;
+					$("#expirationTime").html("Loading...");
+					setTimeout(function(){
+						fetchValidity(1);
+					}, 1000);
+					
+					setStorageValue('activeVoucher', currentVoucher);
+					
+					var time = sessiontime;
+					if(time == "0"){
+						$("#remainTime").html("Unlimited");
+					}else{
+						$("#remainTime").html(secondsToDhms(time));
+						remainingTimer = setInterval(function(){
+							time--;
+							$("#remainTime").html(secondsToDhms(time));
+							if(time <= 0){
+								$.toast({
+									title: 'Success',
+									content: 'Time limit exceeded, Thank you for the purchase, will be logout shortly',
+									type: 'success',
+									delay: 5000
+								});
+								clearInterval(remainingTimer);
+								setTimeout(function(){
+									document.logout.submit();
+								}, 6000);
+							}
+						}, 1000);
+					}
+					
+				});
+				
+				function fetchValidity(retryNo){
+					if(retryNo > 5){
+						fallbackValidity();
+						return;
+					}
+					var macNoColon = replaceAll(mac, ":");
+					$.ajax({
+							  type: "GET",
+							  url: "/data/"+macNoColon+".txt?query="+new Date().getTime(),
+							  success: function(data){
+								if(data.length > 50){
+									setTimeout(function(){
+										fetchValidity(retryNo++);
+									}, 1000);
+									return;
+								}
+								var macData = data.split("#");
+								var validityRaw = macData[1];
+								
+								var validityTime = null;
+								if(validityRaw.length > 15){
+									validityTime = new Date(Date.parse(validityRaw));
+								}else if(validityRaw.length > 8){
+									var dt = validityRaw.split(" ");
+									var yr = new Date().getFullYear();
+									validityTime = new Date(Date.parse(dt[0]+"/"+yr+" "+dt[1]));
+								}else if(validityRaw.length == 0){
+									validityTime = null;
+								} else{
+									var curDate = new Date();
+									var m = curDate.getMonth()+1;
+									var d = curDate.getDate();
+									var yr = curDate.getFullYear();
+									validityTime = new Date(Date.parse(m+"/"+d+"/"+yr+" "+validityRaw));
+								}
+								if(validityTime != null){
+									$("#expirationTime").html(validityTime.toLocaleString());
+								}else{
+									$("#expirationTime").html("No Expiration");
+								}
+							  },
+							  error: function(d){
+									fallbackValidity();
+							 }
+					});			
+				}
+				
+				function fallbackValidity(){
+					var validity = getStorageValue(voucher+"validity");
+					if(validity != null){
+						var curDate = new Date();
+						var validityTime = new Date(parseInt(validity));
+						if(validityTime.getTime() < curDate.getTime()){
+							removeStorageValue(voucher+"validity");
+							removeStorageValue(voucher+"tempValidity");
+							$("#expirationTime").html("Not Available");
+						}else{
+							$("#expirationTime").html(validityTime.toLocaleString());
+						}
+					}else{
+						$("#expirationTime").html("Not Available");
+					}
+				}
+				
+				$(if refresh-timeout)
+					setInterval(function(){
+						if(!insertingCoin){
+							location.reload();
+						}
+					}, $(refresh-timeout-secs) * 1000);
+				$(endif)
+			</script>
+			
+			
+			<div id="loaderDiv" class="spinner hidden">
+				<center>
+					<img src="assets/loading.svg" />
+				</center>
+			</div>
+</div>
+</center>
+</div>
+</body>
+
+</html>

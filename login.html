@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<!-- IAMNOTLOGINSTRINGPLEASEDONTREMOVE -->
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="assets/css/toast.min.css">
+	<link rel="stylesheet" href="assets/css/core.css">
+    <link rel="stylesheet" href="assets/css/JuanFi.css">
+    <title>Pisowifi</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<script src="assets/js/config.js"></script>
+    <script src="assets/js/md5.js"></script>
+	<script src="assets/js/pako.min.js"></script>
+	<script src="assets/js/qrcode.min.js"></script>
+	
+<style>
+
+.qrcode-wrapper{
+	background-color: white;
+	padding: 23px;
+	width: fit-content;
+}
+
+</style>
+</head>
+
+<body id="loginBody">
+
+	 $(if chap-id)
+    <form name="sendin" action="$(link-login-only)" method="post" style="display:none">
+        <input type="hidden" name="username" />
+        <input type="hidden" name="password" />
+        <input type="hidden" name="dst" value="$(link-orig)" />
+        <input type="hidden" name="popup" value="true" />
+    </form>
+
+    <script>
+        var mac = "$(mac)";
+		var uIp = "$(ip)";
+        var ImOnLogin = "1";
+        var ImOnStatus = "0";
+		var alertVoucher = "0";
+		var loginError = "";
+
+        function doLogin() {
+			var vc = $("#voucherInput").val();
+			if( macAsVoucherCode && vc == "" ){
+				var macNoColon = replaceAll(mac, ":");
+				$("#voucherInput").val(macNoColon);
+			}
+			setStorageValue("activeVoucher", vc);
+			var validity = getStorageValue(vc+"validity");
+			var tempValidity = getStorageValue(vc+"tempValidity");
+			if(tempValidity != null){
+				var currentExpireDate = new Date();
+				if(validity != null){
+					currentExpireDate = new Date(parseInt(validity));
+				}
+				var minutes = parseInt(tempValidity);
+				var expireDate = new Date(currentExpireDate.getTime() + minutes*60000);
+				
+				var currentDate = new Date();
+				if(expireDate.getTime() < currentDate.getTime()){
+					removeStorageValue(vc+"validity");
+					removeStorageValue(vc+"tempValidity");
+				}else{
+					setStorageValue(vc+"validity", expireDate.getTime()+"");
+					removeStorageValue(vc+"tempValidity");
+				}
+				
+			}
+            document.sendin.username.value = vc;
+			if(loginOption == 0){
+				document.sendin.password.value = hexMD5('$(chap-id)' + "" + '$(chap-challenge)');
+			}else{
+				document.sendin.password.value = hexMD5('$(chap-id)' + vc + '$(chap-challenge)');
+			}
+            document.sendin.submit();
+            return false;
+        }
+    </script>
+	
+	<script type="text/javascript" src="assets/js/md5.js"></script>
+	<script type="text/javascript">
+	<!--
+	    function doLoginMember() {
+		document.sendin.username.value = document.login.username.value;
+		document.sendin.password.value = hexMD5('$(chap-id)' + document.login.password.value + '$(chap-challenge)');
+		document.sendin.submit();
+		return false;
+	    }
+	//-->
+	</script>
+	$(endif)
+
+	$(if error)
+	<script>
+        loginError = "$(error)";
+    </script>
+	$(endif)
+
+    <div class="container">
+		<center>
+        <div class="row">
+			
+            <div class="col-md-12">
+                <div class="banner">
+                    <img src="assets/MainPic.png" class="img-fluid" />
+
+					<div id="announcement-holder" class="my-announcement">
+						<span id="announcement">-</span>
+					</div>
+                </div>	
+            </div>
+			
+            <div class="col-md-12">
+                <div class="login">
+
+					
+					<div class="stats">
+						<span class="status-disconnected"><span class="blinking1" style="color: #b90000; letter-spacing: 2px; font-weight: 700;">&#9678; Disconnected &#9678;</span></span>
+					</div>
+					
+					<div class="info">		
+						<div class="info-mac" style="display: inline-block; margin-right: 1px;">
+							<span>$(mac)</span>
+						</div>
+						-
+						<div class="info-ip" style="display: inline-block; margin-left: 1px;">
+							<span id="ipc">$(ip)</span>
+						</div>
+					</div>
+
+					<div id="vendoSelectDiv">
+						<label for="exampleFormControlSelect2">Select Vendo</label>
+						<select class="form-control" name="vendoSelected" id="vendoSelected" >
+						
+						</select>
+					</div>
+
+					<p class="info $(if error)alert$(endif)" style="margin-bottom: 0;">
+						$(if error == "")
+						$(if trial == 'yes')Free trial available.
+						<a class="btn btn-red" style="margin-bottom: 0;" href="$(link-login-only)?dst=$(link-orig-esc)&amp;username=T-$(mac-esc)">GET FREE TIME</a>
+						$(endif)
+						$(endif)
+						$(if error)$(error)$(endif)
+					</p>
+
+					<br>
+					
+					<button type="button" id="insertBtn" onclick="insertBtnAction(); return false" class="btn" data-toggle="modal" >INSERT COIN</button>
+								
+					<button type="button" id="promoRateBtn" onclick="promoBtnAction(); return false" class="btn btn-red">PROMO RATES</button>
+									
+					<button type="button" id="chargingBtn" onclick="chargingBtnAction(); return false" class="btn btn-red">CHARGING STATION</button>
+									
+					<button type="button" id="eloadBtn" onclick="eloadBtnAction(); return false" class="btn btn-red">E-LOAD</button>
+									
+					<button type="button" id="memberLoginBtn" class="btn btn-red" data-toggle="modal" data-target="#memberModal">MEMBER LOGIN</button>
+								
+						
+					<div class="form-group" style="margin-bottom: 0px!important;">
+						<input type="voucher" class="form-control" id="voucherInput" aria-describedby="voucherHelp" style="border-radius: 20px; margin-bottom: 5px;" placeholder="Voucher here..">
+						<button type="button" id="scanQrBtn" onclick="$('#scanQrModal').modal('show'); return false" class="btn outlineBtn" style="display: none">Purchase Via QR</button>
+						<button type="button" id="connectBtn" onClick="doLogin(); return false" class="btn outlineBtn">Connect Voucher</button>
+					</div>
+					
+					
+					<div class="modal " id="insertCoinModal" style="z-index: 1500" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="insertCoinModalTitle" aria-hidden="true">
+					  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<h5 class="modal-title" id="insertCoinModalTitle">Please insert the coin</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true">&times;</span>
+							</button>
+						  </div>
+						  <div class="modal-body">
+							    <div class="progress" style="margin-bottom: 5px">
+									<div id="progressDiv" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%; height: 30px"></div>
+								</div>
+
+								<div id="noticeDiv" style="display: none">
+									<center>
+										<h4 id="noticeText">Reading coin, please wait</h4>
+									</center>
+								</div>
+
+								<div class="inscoin">
+									<center>
+										<div class="inscoinholder vcCodeHolder" id="vcCodeDiv">
+											<span class="mytext">Your code is</span><br>
+											<span id="codeGeneratedBlock">
+												<span id="codeGenerated"
+													style="font-size: 35px; font-weight: bold; color: #00de59">*****</span>
+											</span>
+										</div>
+
+										<ul class="list-group text-left" style="margin: 5px 0 5px 0;">
+											<li class="list-group-item">Coin:<span id="totalCoin"> --</span><span
+													style="margin-left: 0px;">.00 Php</span></li>
+
+											<li class="list-group-item" id="totalTimeDiv">Time:<span id="totalTime">
+													--</span></li>
+
+											<li class="list-group-item" id="conVCholder">Converted Voucher:<span
+													id="conVC"></span></li>
+
+											<li class="list-group-item" id="expectedCoinDiv" style="display: none">
+												Expected Coin:<span id="expectedCoin"> --</span>
+											</li>
+
+										</ul>
+
+										<div class="inscoinholder convertVoucherBlock" id="convertVoucherBlockDiv" style="margin: 5px 0;">
+											<span class="mytext">Convert unused voucher</span>
+											<br>
+											<input type="text" class="form-control" id="convertVoucherCode"
+												placeholder="Enter voucher"
+												style="max-width: 180px; text-align: center; display: inline-block;">
+											<button type="button" id="convertBtn" class="btn outlineBtn"
+												onclick="convertVoucherAction(); return false"
+												style="width: 80px; height: 38px; display: inline-block; margin-top: -4px;">Convert</button>
+										</div>
+
+									</center>
+								</div>
+	
+						  </div>
+						  <div class="modal-footer">
+							<button type="button" id="saveVoucherButton" onclick="saveVoucherBtnAction(); return false" class="btn btn-green" data-dismiss="modal" style="width: 40%;">
+							  Done
+							</button>
+							<button type="button" id="cncl" class="btn btn-red" data-dismiss="modal" style="width: auto;">Cancel</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
+					
+					<div class="modal " id="promoRatesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+					  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">Promo Rates</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true" style="color: #fff">&times;</span>
+							</button>
+						  </div>
+						  <div class="modal-body">
+							<center>
+								<div id="rateTypeDiv">
+								<label for="rateType" class="rate-title"><b>Rate Type</b></label>
+								<select name="rateType" class="form-control" id="rateType" onChange="onRateTypeChange(this)">
+								  <option value="1">Internet</option>
+								  <option value="2">Charging</option>
+								</select>
+								</div>
+							</center>
+							
+							<center>	
+							<div id="ratesBody"></div>
+							<div id="totalTime"></div>							
+							</center>
+						  </div>
+						  <div class="modal-footer">
+							<button type="button" class="btn btn-red" data-dismiss="modal" style="width: auto;">Close</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
+					
+					<div class="modal " id="chargingModal" tabindex="1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+					  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">Charging Station</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true" style="color: #fff">&times;</span>
+							</button>
+						  </div>
+						  <div class="modal-body">
+							<center>	
+							<div id="chargingBody"></div>
+							</center>
+						  </div>
+						  <div class="modal-footer">
+							<button type="button" class="btn btn-red" data-dismiss="modal" style="width: auto;">Close</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
+					<div class="modal " id="eloadModal" tabindex="1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false" >
+					  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">E-LOAD</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							  <span aria-hidden="true" style="color: #fff">&times;</span>
+							</button>
+						  </div>
+						  <div class="modal-body">
+							<center>	
+							<div id="eloadingBody">
+								<h4 id="eloadConfirm" style="display: none"><span style="color: #2e86de;">CONFIRM YOUR SELECTED DETAILS</span></h4>
+								<div id="mobileNumDiv">
+									<label for="exampleFormControlSelect2">Mobile #</label>
+									<input type="number" class="form-control" id="mobileNo" aria-describedby="mobileNo"  pattern="\d*" maxlength="11" placeholder="Enter mobile number (Ex: 09182392234)" required>
+								</div>
+								<div id="loadTypeDiv" style="display: none;">
+									<label for="exampleFormControlSelect2" >Select Load Type</label>
+									<select class="form-control" name="loadType" onChange="loadTypeChanged(this)" id="loadTypeSelected" >
+									</select>
+								</div>
+								<div id="productTypeDiv" style="display: none;">
+									<label for="exampleFormControlSelect2">Select Product</label>
+									<select class="form-control " name="productType" id="productTypeSelected" onChange="productTypeChanged(this)">
+									</select>
+									<label for="exampleFormControlSelect2">Price (PHP)</label>
+									<input type="text" class="form-control" id="price" aria-describedby="mobileNo" disabled>
+								</div>
+								<br/>
+								<h5 id="eloadConfirm2" style="display: none;"><span style="color: #2e86de;">Please make sure to insert the exact amount <ul style="
+									font-size: medium;
+									color: white;
+									text-align: left;
+								"><li>In case theres an excess amount or amount is insufficient, it will be converted to a voucher code and you can use it for your next e-Loading or you can use it on internet service.</li></ul></span></h5>
+							</div>
+							</center>
+						  </div>
+						  <div class="modal-footer">
+							<button type="button" id="buyEloadPrevBtn" class="btn btn-red" onclick="buyEloadPrevAction(); return false" style="width: auto;">Close</button>
+						    <button type="button" id="buyEloadBtn" onclick="buyEloadAction(); return false" class="btn btn-green" style="width: auto;">Next</button>
+						  </div>
+						</div>
+					  </div>
+					</div>
+
+					<div class="modal " id="scanQrModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+						<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+						  <div class="modal-content">
+							<div class="modal-header">
+							  <h5 class="modal-title" id="exampleModalLabel">Purchase Voucher using QR Code</h5>
+							  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true" style="color: #fff">&times;</span>
+							  </button>
+							</div>
+							<div class="modal-body">
+								<center>
+									<p>Present this QR code to the vendo owner</p>
+									
+									<div id="qrcode" class="qrcode-wrapper"></div>
+									<br/>
+									<p>Once your request has been approved you will be automatically logged in.</p>
+								</center>
+							</div>
+							<div class="modal-footer">
+							  <button type="button" class="btn btn-red" data-dismiss="modal" style="width: auto;">Close</button>
+							</div>
+						  </div>
+						</div>
+					  </div>
+					
+					
+		
+				<div class="modal " id="memberModal" role="dialog" data-backdrop="static" data-keyboard="false">
+					<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+						
+						<button type="button" class="close" data-dismiss="modal" style="color: #fff">&times;</button><br>        
+		  
+						</div>
+						<div class="modal-body">
+						<!-- content -->
+						<div class="memdiv">
+						<center>
+						<!-- title -->
+						<h4 class="modal-title"><span style="color: #00f4ff;">Member Login</span></h4>
+						<form name="login" action="$(link-login-only)" method="post" $(if chap-id) onSubmit="return doLoginMember()" $(endif)>
+							<input type="hidden" name="dst" value="$(link-orig)" />
+							<input type="hidden" name="popup" value="true" />
+							<span style="float: left; color: #812a00">Username</span><br>
+							<input name="username" type="text" value="$(username)" />
+							<span style="float: left; color: #812a00">Password</span><br>
+							<input name="password" type="password" /><br>
+							<button class="btn outlineBtn" type="submit" value="Connect" style="width: 50%">Login</button>
+						</form>
+						</center>
+		  
+						</div>
+		  
+						</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-red" data-dismiss="modal" style="width: auto;">Close</button>
+					</div>
+				</div>
+      
+				</div>
+			</div>
+
+                </div>
+				<div class="footer">
+					<span class="footers mytext" style="font-size: 14px;">
+					Powered by: <a href="https://" id="footerName">-</a>			
+					</span>				
+				</div>
+            </div>
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/popper.min.js"></script>
+			<script src="assets/js/bootstrap.min.js"></script>
+			<script src="assets/js/toast.min.js"></script>
+			<script src="assets/js/core.js"></script>
+			<script src="assets/js/eload.js"></script>
+			<script>
+				var reLogin = getStorageValue('reLogin');
+				var hotspotAddress = "$(server-address)"; 
+				var interfaceName = "$(interface-name)";
+				if(reLogin == '1'){
+					setStorageValue('reLogin', '0');
+					doLogin();
+				}
+			</script>
+			<script>
+				function off() {
+					document.getElementById("overlay").style.display = "none";
+				}
+				
+				var purchaseInfo = "juanfi://purchasevoucher?mac="+mac+"&ip="+uIp;
+				
+				new QRCode(document.getElementById("qrcode"), JSON.stringify(purchaseInfo) );
+			</script>
+			
+			<div id="loaderDiv" class="spinner hidden">
+				<center>
+					<img src="assets/loading.svg" />
+				</center>
+			</div>
+	</div>	
+
+</div>	
+</div>
+</center>
+</div>
+</body>
+
+</html>

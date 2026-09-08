@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="assets/css/toast.min.css">
+	<link rel="stylesheet" href="assets/css/core.css">
+	<link rel="stylesheet" href="assets/css/JuanFi.css">
+    <title>Pisowifi - Status</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<script src="assets/js/config.js"></script>
+
+</head>
+<body id="loginBody">
+
+<div class="container">
+<center>
+		<form action="$(link-logout)" name="logout" >
+			<input type="hidden" name="erase-cookie" value="true" />
+		</form>
+		
+        <div class="row">
+            <div class="col-md-12">
+                <div class="banner">
+                    <img src="assets/MainPic.png" class="img-fluid" />
+
+					<div id="announcement-holder" class="my-announcement">
+						<span id="announcement">-</span>
+					</div>
+                </div>	
+            </div>
+
+            <div class="col-md-12">
+                <div class="login">
+			
+					<div class="stats" style="width: 120px;">
+						<span class="status-connected"><span class="blinking1" id="connectionStatus" style="color: darkorange; letter-spacing: 2px; font-weight: 700;">&#9678; Paused &#9678;</span></span>
+					</div>
+					
+					<div class="info">		
+						<div class="info-mac" style="display: inline-block; margin-right: 1px;">
+							<span>$(mac)</span>
+						</div>
+						-
+						<div class="info-ip" style="display: inline-block; margin-left: 1px;">
+							<span id="ipc">$(ip)</span>
+						</div>
+					</div>
+
+					<div class="vcher" style="width: 100%;">
+						<span class="mytext">Code:</span>
+						<span style="font-size: 18px; font-weight: bold; color: darkorange;">$(username)</span>
+					</div>
+
+					
+					<div class="stats-holder" style="width: 90%;">						
+						<span class="mytext">Remaining Time: </span>
+						<span class="odometer" id="pauseRemainTime" style="font-size: 16px; font-weight: bold;"></span>	
+					</div>
+
+					<div class="stats-holder" style="width: 80%;">					
+						<span class="mytext" style="font-size: 10px;">Valid: </span>
+						<span id="expirationTime" style="font-size: 10px; font-weight: bold;"></span>
+					</div>
+					
+					<br>
+
+				<button type="button" id="connectBtn" onClick="resume(); return false" class="btn btn1">RESUME SESSION</button>
+				
+				<button type="button" id="cancelBtn" onClick="cancelPause(); return false" class="btn btn-red">CANCEL SESSION</button>
+		
+                </div>
+				
+				<div class="footer">
+					<span class="footers mytext" style="font-size: 14px;">
+					Powered by: <a href="https://" id="footerName">-</a>			
+					</span>				
+				</div>
+            </div>
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/popper.min.js"></script>
+			<script src="assets/js/bootstrap.min.js"></script>
+			<script src="assets/js/toast.min.js"></script>
+			<script src="assets/js/core.js"></script>
+			<script src="assets/js/eload.js"></script>
+
+			<script>
+				var loginError = "";
+				var mac = "$(mac)";
+				var logoutUrl = "$(link-logout)";
+				var remainingTimer = null;
+				var hotspotAddress = "$(server-address)"; 
+				var interfaceName = "$(interface-name)";
+		
+				$(document).ready(function(){
+					$("#expirationTime").html("Loading...");
+					setTimeout(function(){
+						fetchValidity(1);
+					}, 1000);
+				});
+			</script>
+
+			
+			<div id="loaderDiv" class="spinner hidden">
+				<center>
+					<img src="assets/loading.svg" />
+				</center>
+			</div>
+</div>
+</center>
+</div>
+</body>
+
+</html>
