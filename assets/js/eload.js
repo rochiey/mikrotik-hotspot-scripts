@@ -392,6 +392,8 @@ function processEloadNow(){
 			$("#loaderDiv").attr("class","spinner hidden");
 			$( "#cncl" ).prop('disabled', false);
 			if(data.status == "true"){
+				//ELOAD SALE COMPLETED - notify API (product price is the sale amount)
+				sendSaleNotification(TOPUP_ELOAD, productPrice, 0, "", "", { product: $( "#productTypeSelected option:selected" ).text(), mobile_no: $("#mobileNo").val() });
 				if(totalCoinReceived > productPrice){
 					$.toast({
 						title: 'Success',

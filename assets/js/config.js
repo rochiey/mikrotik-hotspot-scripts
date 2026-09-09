@@ -52,7 +52,7 @@ var qrCodeVoucherPurchase = false;
 
 // Telegram Feature ----------------------------------------------------------------------------------------------------------------
 
-var EnableTelegram = true;
+var EnableTelegram = false;
 
 // Notify for every coin inserted by custmer via Telegram.
 var CoinDropNotify = false;
@@ -62,6 +62,15 @@ var  telegramToken  = "--";
 
 // Telegram ChatID
 var  telechatId = "--";
+
+// Sales API Feature (sends a request to your website every time a SALE is completed) -----------------------------------------------
+
+// true = send a notification to your API endpoint every time a sale is completed (time awarded to the customer)
+// NOTE: this is NOT sent per coin, it is sent once per transaction with the TOTAL amount of coins inserted
+var EnableSalesApi = true;
+
+// Your API endpoint URL (a POST request is sent here every time a completed sale)
+var salesApiUrl = "https://yourwebsite.com/api/pisowifi/sale";
 
 // OTHER ---------------------------------------------------------------------------------------------------------------------------
 

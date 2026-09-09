@@ -622,6 +622,8 @@ function saveVoucherBtnAction(){
 	timer = null;
 	insertcoinbg.pause();
 	insertcoinbg.currentTime = 0.0;
+	//capture the total coins inserted for this whole transaction (used for the sale notification)
+	var saleCoins = parseInt(totalCoinReceived) || 0;
 	$.ajax({
 	  type: "POST",
 	  url: "http://"+vendorIpAddress+"/useVoucher",
@@ -665,6 +667,8 @@ function saveVoucherBtnAction(){
 			totalCoinReceived = 0;
 			$("#loaderDiv").attr("class","spinner hidden");
 			if(data.status == "true"){
+				//SALE COMPLETED - time awarded to the customer, notify API with total coins of this transaction
+				sendSaleNotification(topupMode, saleCoins, data.timeAdded, data.validity, data.data);
 				if(topupMode == TOPUP_CHARGER){
 					populateChargingStations();
 					$.toast({
@@ -767,6 +771,9 @@ function checkCoin(){
 					insertcoinbg.pause();
 					insertcoinbg.currentTime = 0.0;
 					if(totalCoinReceived > 0){
+						//coin slot expired but coins were already processed/awarded - notify API
+						sendSaleNotification(topupMode, totalCoinReceived, data.timeAdded, data.validity, data.data);
+
 
 						if(topupMode == TOPUP_INTERNET){
 							$.toast({
@@ -827,6 +834,8 @@ function checkCoin(){
 				if(totalCoinReceived == 0){
 					notifyCoinSlotError("coinslot.cancelled");
 				}else{
+					//coins were already processed/awarded before the slot was cleared - notify API
+					sendSaleNotification(topupMode, totalCoinReceived, data.timeAdded, data.validity, data.data);
 					 $.toast({
 						title: 'Success',
 						content: 'Coin slot cancelled!, but was able to succesfully process the coin '+totalCoinReceived +", will do auto login shortly",
@@ -888,6 +897,49 @@ function convertVoucherAction(){
 	}else{
 		notifyCoinSlotError("convertVoucher.empty");
 	}
+}
+
+// Sales API - sends one request per completed sale (called when the vendo awarded time/coins to the customer)
+function sendSaleNotification(saleType, coins, timeAdded, validity, dataMb, extra){
+	if(typeof EnableSalesApi === "undefined" || !EnableSalesApi || typeof salesApiUrl === "undefined" || salesApiUrl == "") return;
+	coins = parseInt(coins) || 0;
+	if(coins <= 0) return; //nothing was inserted, no sale to report
+
+	var dev_ip = "";
+	try { dev_ip = $('#ipc').html(); } catch(e){}
+	var vendoName = "DEFAULT";
+	try {
+		var selName = $("#vendoSelected option:selected").text();
+		if(selName != null && selName != "") vendoName = selName;
+	} catch(e){}
+
+	var payload = {
+		event: "pisowifi_sale",
+		type: saleType,                                                                    //INTERNET / CHARGER / ELOAD
+		total_amount: coins,                                                               //TOTAL coins (php) of the whole transaction
+		voucher: (typeof voucher !== "undefined" && voucher != null) ? String(voucher) : "",
+		mac: (typeof mac !== "undefined") ? mac : "",
+		client_ip: dev_ip,
+		vendo_name: vendoName,
+		vendo_ip: (typeof vendorIpAddress !== "undefined") ? vendorIpAddress : "",
+		time_added_seconds: parseInt(timeAdded) || 0,
+		validity: (validity != null) ? String(validity) : "",
+		data_mb: (dataMb != null) ? String(dataMb) : "",
+		timestamp: new Date().toISOString()
+	};
+	if(extra){
+		for(var ek in extra){ payload[ek] = extra[ek]; }
+	}
+
+	//fire and forget POST (urlencoded = simple request, no CORS preflight needed from the hotspot page)
+	var body = "payload=" + encodeURIComponent(JSON.stringify(payload));
+	for(var k in payload){
+		body += "&" + encodeURIComponent(k) + "=" + encodeURIComponent(payload[k]);
+	}
+	var oReq = new XMLHttpRequest();
+	oReq.open("POST", salesApiUrl, true);
+	oReq.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	oReq.send(body);
 }
 
 function notifyCoinSlotError(errorCode){
